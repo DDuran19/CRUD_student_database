@@ -2,12 +2,12 @@
 
 ## <strong style="color:lightblue">Overview</strong>:
 
-This project aims to create a relational database management system using `SQLite3` and implement a user-friendly graphical user interface (GUI) using `customtkinter`. The application will consist of four distinct tables: `users`, `advisers`, `courses`, and `year`. The use of a database will ensure efficient data storage and retrieval by avoiding repetition of strings.
+This project aims to create a relational database management system using `SQLite3` and implement a user-friendly graphical user interface (GUI) using `customtkinter`. The application will consist of six distinct tables: `users`, `advisers`, `courses`, `year`, `enrollment_status` and `organization`. The use of a database will ensure efficient data storage and retrieval by avoiding repetition of strings.
 
 
 ## <strong style="color:lightblue">Features</strong>:
 
-<strong style = "color:orange">Relational Database</strong>: The project utilizes SQLite3 to set up and manage the database. The tables include users, advisers, courses, and year, ensuring efficient data organization and retrieval.
+<strong style = "color:orange">Relational Database</strong>: The project utilizes SQLite3 to set up and manage the database. The tables include  `users`, `advisers`, `courses`, `year`, `enrollment_status` and `organization`, ensuring efficient data organization and retrieval.
 
 <strong style = "color:orange">customtkinter</strong>: The graphical user interface is built using customtkinter, providing a user-friendly interface for manipulating the database. The GUI layout consists of a main table on the top section, an info section on the bottom left for data editing/modification, and a button section on the bottom right.
 
