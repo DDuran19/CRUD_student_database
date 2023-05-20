@@ -34,40 +34,46 @@ This project aims to create a relational database management system using `SQLit
 
 ## <strong style="color:lightblue">Database Schema</strong> (sqlite3):
 
-    CREATE TABLE IF NOT EXISTS students (
-        id INTEGER PRIMARY KEY UNIQUE NOT NULL,
-        Student_name CHAR(50),
-        Organization_id INTEGER,
-        Enrollment_status_id INTEGER,
-        Adviser_id INTEGER,
-        Course_id INTEGER,
-        Year_id INTEGER
+    CREATE TABLE IF NOT EXISTS "students" (
+        "id"	INTEGER NOT NULL UNIQUE,
+        "Student_name"	CHAR(50),
+        "Organization_id"	INTEGER,
+        "Enrollment_status_id"	INTEGER,
+        "Adviser_id"	INTEGER,
+        "Course_id"	INTEGER,
+        "Year_id"	INTEGER,
+        PRIMARY KEY("id" AUTOINCREMENT)
     );
 
     CREATE TABLE IF NOT EXISTS advisers (
-        id INTEGER PRIMARY KEY UNIQUE NOT NULL,
-        adviser_name CHAR(50)
+        "id" INTEGER NOT NULL UNIQUE,
+        "adviser_name" CHAR(50),
+        PRIMARY KEY("id" AUTOINCREMENT)
     );
-    
+
     CREATE TABLE IF NOT EXISTS courses (
-        id INTEGER PRIMARY KEY UNIQUE NOT NULL,
-        course_name CHAR(20)
+        "id" INTEGER NOT NULL UNIQUE,
+        course_name CHAR(20),
+        PRIMARY KEY("id" AUTOINCREMENT)
     );
 
     CREATE TABLE IF NOT EXISTS year (
-        id INTEGER PRIMARY KEY UNIQUE NOT NULL,
-        year_level CHAR(9)
+        "id" INTEGER NOT NULL UNIQUE,
+        year_level CHAR(9),
+        PRIMARY KEY("id" AUTOINCREMENT)
     );
-    
+
     CREATE TABLE IF NOT EXISTS enrollment_status(
-        id INTEGER PRIMARY KEY UNIQUE NOT NULL,
-        enrollment_status CHAR(20)
+        "id" INTEGER NOT NULL UNIQUE,
+        "enrollment_status" CHAR(20),
+        PRIMARY KEY("id" AUTOINCREMENT)
     );
 
     CREATE TABLE IF NOT EXISTS organization(
-        id INTEGER PRIMARY KEY UNIQUE NOT NULL,
-        organization CHAR(20)
-    );
+        "id" INTEGER NOT NULL UNIQUE,
+        "organization" CHAR(20),
+        PRIMARY KEY("id" AUTOINCREMENT));
+
 ## <strong style="color:lightblue">AUTHOR</strong>
 Denver James Duran
 - [Facebook](https://www.facebook.com/denver02.james14/)

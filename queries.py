@@ -21,10 +21,7 @@ def create(table_name: table_name, **kwargs) ->bool:
                 question_marks+=COMMA
                 columns+=COMMA
 
-
-
-        query_string = f"INSERT INTO {table_name} ({columns}) \
-            VALUES({question_marks})"
+        query_string = f"INSERT INTO {table_name} ({columns}) VALUES({question_marks})"
         values = tuple(values)
         try:
             cur.execute(query_string,values)
@@ -40,41 +37,44 @@ def read(table_name: table_name,id: int, limit:limit=limit.One) -> sqlite3.Curso
         cur = db.cursor()
         query=''
         table_name=table_name.value
-        if table_name =="students":
-            query +="SELECT students.id, students.Student_name, courses.course_name, year.year_level,\
-                enrollment_status.enrollment_status,advisers.adviser_name, \
-                organization.Organization\
-                FROM students    \
-                JOIN advisers ON students.Adviser_id = advisers.id    \
-                JOIN courses ON students.Course_id = courses.id    \
-                JOIN organization ON students.Organization_id = organization.id    \
-                JOIN year ON students.Year_id = year.id\
-                JOIN enrollment_status ON students.Enrollment_status_id = enrollment_status.id\
-                    \
-                WHERE students.id = ?"
+        match table_name:
+            case "students":
+                query +=f"SELECT students.id, students.Student_name, courses.course_name, year.year_level,\
+                    enrollment_status.enrollment_status,advisers.adviser_name, \
+                    organization.Organization\
+                    FROM students    \
+                    JOIN advisers ON students.Adviser_id = advisers.id    \
+                    JOIN courses ON students.Course_id = courses.id    \
+                    JOIN organization ON students.Organization_id = organization.id    \
+                    JOIN year ON students.Year_id = year.id\
+                    JOIN enrollment_status ON students.Enrollment_status_id = enrollment_status.id\
+                        \
+                    WHERE students.id = {id}"
             
-        elif table_name=="advisers":
-            query+="SELECT adviser_name FROM advisers where id = ?"
+            case "advisers":
+                query+=f"SELECT adviser_name FROM advisers where id = {id}"
 
-        elif table_name=="courses":
-            query+="SELECT course_name FROM courses where id = ?"
+            case "courses":
+                query+=f"SELECT course_name FROM courses where id = {id}"
 
-        elif table_name=="year":
-            query+="SELECT year_level FROM year where id = ?"
+            case "year":
+                query+=f"SELECT year_level FROM year where id = {id}"
 
-        elif table_name=="enrollment_status":
-            query+="SELECT enrollment_status FROM enrollment_status where id = ?"
+            case "enrollment_status":
+                query+=f"SELECT enrollment_status FROM enrollment_status where id = {id}"
 
-        elif table_name=="organization":
-            query+="SELECT organization FROM organization where id = ?"
+            case "organization":
+                query+=f"SELECT organization FROM organization where id = {id}"
       
-        rows=cur.execute(query,(id,))
-        print(query)
-        print(id)
-        if limit: rows = cur.fetchone()
-        else: rows = cur.fetchall()
+        rows=cur.execute(query)
+        
+        student=[]
+        if limit:
+            student = rows.fetchone()
+        else: 
+            student = rows.fetchall()
 
-        return rows
+        return student
  
 def update(table_name: table_name,id: int,**kwargs) -> bool:
     with sqlite3.connect(DATABASE_PATH) as db:

@@ -4,6 +4,8 @@ import tkinter as stk
 from tkinter import ttk
 from dataclasses import dataclass
 from typing import Optional,Union
+from random import choice
+from time import sleep
 
 from queries import create,read,update,delete,get_all_students,get_data_for_dropdown
 from utils import limit,table_name
@@ -62,7 +64,9 @@ class main_window:
     def create_the_window(self):
         self.window = CTk.CTk()
         self.window.geometry(self.get_center_of_screen())
-        self.window.columnconfigure(0,weight=1)    
+        self.window.columnconfigure(0,weight=1)
+        self.window.maxsize(self.WIDTH,self.HEIGHT)   
+        self.window.minsize(self.WIDTH*0.7,self.HEIGHT*0.7) 
     def set_title(self):
         self.window.title(self.TITLE)    
     def set_appearance_mode(self):
@@ -109,15 +113,16 @@ class main_window:
     
     def create_controls_frame(self):
         self.controls=CTk.CTkFrame(self.window,bg_color="transparent")
-        self.controls.columnconfigure(0,weight=0,minsize=585)
-        self.controls.columnconfigure(1,weight=0,minsize=585)
+        self.controls.columnconfigure(0,weight=0,minsize=370)
+        self.controls.columnconfigure(1,weight=1)
         self.controls.grid(row=1,column=0, padx=20, pady=(0,0), sticky="wens")
 
         self.info_frame=CTk.CTkFrame(self.controls)
         self.info_frame.columnconfigure(0,weight=0,minsize=200)
         self.info_frame.grid(row=0,column=0,padx=5,pady=5,sticky="w")
         self.buttons_frame=CTk.CTkFrame(self.controls)
-        self.buttons_frame.grid(row=0,column=1,padx=5,pady=5,sticky="e")
+        self.buttons_frame.grid(row=0,column=1,padx=5,pady=5,sticky="nwe")
+
     def setup_info_frame(self):
  
         description_frame = CTk.CTkFrame(self.info_frame,bg_color="transparent",fg_color="transparent")
@@ -133,7 +138,7 @@ class main_window:
 
 
         self.entry_frame = CTk.CTkFrame(self.info_frame,bg_color="transparent",fg_color="transparent")
-        self.entry_frame.grid(row=1,padx=0,pady=(0,3),sticky="s")
+        self.entry_frame.grid(row=1,column=0,padx=0,pady=(0,3),sticky="s")
 
         row=1
         self.column_label=0
@@ -147,8 +152,8 @@ class main_window:
 
         self.student_name = CTk.CTkEntry(self.entry_frame,width=350)
         self.student_name.grid(row=2,column=self.column_entry,padx=5,sticky="e")
+        
         self.setup_infos_as_entry_for_view_mode()
-
     def setup_infos_as_combobox_for_edit_mode(self):
         self.year = CTk.CTkComboBox(self.entry_frame,width=350,values=get_data_for_dropdown('year'))
         self.year.grid(row=3,column=self.column_entry,padx=5,sticky="e")
@@ -165,7 +170,6 @@ class main_window:
          
         self.enrollment_status = CTk.CTkComboBox(self.entry_frame,width=350,values=get_data_for_dropdown('enrollment_status'))
         self.enrollment_status.grid(row=7,column=self.column_entry,padx=5,sticky="e")
-
     def setup_infos_as_entry_for_view_mode(self):
         self.year = CTk.CTkEntry(self.entry_frame,width=350)
         self.year.grid(row=3,column=self.column_entry,padx=5,sticky="e")
@@ -183,18 +187,41 @@ class main_window:
         self.enrollment_status.grid(row=7,column=self.column_entry,padx=5,sticky="e")
 
     def setup_buttons_frame(self):
+        actual_buttons = CTk.CTkFrame(self.buttons_frame)
+        actual_buttons.grid(row=0,column=0,sticky="nswe",padx=0,pady=0)
+        new_button=CTk.CTkButton(actual_buttons,width=230,corner_radius=15,text="New Student")
+        new_button.grid(row=0,column=0,pady=(10,10),padx=(5,0),sticky="w")
+        save_button=CTk.CTkButton(actual_buttons,width=230,corner_radius=15,text="Save Changes")
+        save_button.grid(row=0,column=1,pady=(10,10),padx=(15,15),sticky="we")
+        delete_button=CTk.CTkButton(actual_buttons,width=230,corner_radius=15,text="Delete Student")
+        delete_button.grid(row=0,column=2,pady=(10,10),padx=(0,25),sticky="e")
+        generate_button=CTk.CTkButton(actual_buttons,width=230,corner_radius=15,text="GENERATE RANDOM STUDENT",command=self.generate_random_student)
+        generate_button.grid(row=1,column=0,pady=(10,10),padx=(5,0),sticky="w")
+        exit_button=CTk.CTkButton(actual_buttons,width=230,corner_radius=15,text="EXIT")
+        exit_button.grid(row=1,column=1,pady=(10,10),padx=(15,15),sticky="ew")
 
-        pass
-    
+        self.setup_instruction_section()
+    def setup_instruction_section(self):
+        instructions_frame=CTk.CTkFrame(self.buttons_frame)
+        instructions_frame.grid(row=1)
+        text = 'This project aims to create a relational database management system using SQLite3 and implement a user-friendly graphical user interface (GUI) using customtkinter. The application will consist of six distinct tables: users, advisers, courses, year, enrollment_status and organization. The use of a database will ensure efficient data storage and retrieval by avoiding repetition of strings. Simple Project by Denver James Duran.\n\
+        \nNEW STUDENT: Add new data to the database. \n\
+SAVE CHANGES: Update or save the modified data.\n\
+DELETE STUDENT: Delete selected data from the database.\n\
+To exit the application, click the "exit" button.\n'
+
+        instructions = CTk.CTkLabel(instructions_frame,text=text,width=585,wraplength=700,text_color="grey")
+        instructions.grid(row = 1,padx = 45,pady=5,sticky="w")
     def bind_functions(self):
         self.table.bind('<<TreeviewSelect>>', self.item_select)
         self.table.bind('<Double-1>', self.show_to_info_frame)
-    
+
+
     def show_to_info_frame(self,data: any=None):
         selected_student = self.table.selection()
         student_details=self.table.item(selected_student)['values']
-        # At first start of app, there are no selected student yet and this 
-        # will cause errors
+        # At first start of app, there are no selected student yet and  
+        # the codes below will cause an index error
         try:
             if not self.reset_info_on_info_frame():
                 
@@ -237,7 +264,6 @@ class main_window:
         self.adviser.delete(0,END)
         self.enrollment_status.delete(0,END)
         return True
-
     def delete_widgets_on_info_frame(self):
         self.year.destroy()
         self.course.destroy()
@@ -247,7 +273,6 @@ class main_window:
 
     def item_select(self,_):
         self.reset_info_on_info_frame()
-    
     
     def toggle_info_frame(self):      
         self.delete_widgets_on_info_frame()
@@ -259,6 +284,46 @@ class main_window:
             self.setup_infos_as_entry_for_view_mode()
             self.is_in_View_Mode = True
             self.show_to_info_frame()
+
+    def generate_random_student(self):
+        first_names = ['Bob', 'Maria', 'Alex', 'James', 'Susan', 'Henry', 'Lisa', 'Anna', 'Lisa']
+        last_names = ['Smith', 'Brown', 'Wilson', 'Thomson', 'Cook', 'Taylor', 'Walker', 'Clark']
+        numbers=[1,2,3,4,5]
+        
+                
+        random_name = f'{choice(first_names)} {choice(last_names)}'
+        random_year = choice(numbers)
+        random_course = choice(numbers)
+        random_organization = choice(numbers)
+        random_adviser = choice(numbers)
+        random_enrollment_Status = choice(numbers)
+        self.add_student_to_database(Student_Name=random_name,
+                Organization_id=random_organization,
+                Enrollment_Status_id=random_enrollment_Status,
+                Adviser_id=random_adviser,
+                Course_id=random_course,
+                Year_id = random_year)
+
+    def add_student_to_database(self,**kwargs):
+        create(table_name.students,
+                **kwargs)
+        last_child=self.table.get_children()[-1]
+        last_student_id=self.table.item(last_child)["values"][0]  
+
+        student_id = int(last_student_id)+1
+        student = read(table_name.students,student_id,limit=limit.One)
+        
+        Student_Name = str(student[1])
+        Year = str(student[3])
+        Course = str(student[2])
+        Organization = str(student[6])
+        Adviser = str(student[5])
+        Enrollment_Status = str(student[4])
+        data = (student_id,Student_Name,Year,Course,Organization,Adviser,Enrollment_Status)
+        self.table.insert(parent='',index = CTk.END,values = data)
+
+
+
 
     def get_center_of_screen(self,window = None, width = None,height = None,X_OFFSET=0,Y_OFFSET=-100) -> str:
 
