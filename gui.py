@@ -242,5 +242,5 @@ class main_window:
         y = (self.screen_height - (self.HEIGHT // 2)) + Y_OFFSET
 
         return f'{width}x{height}+{x}+{y}'
-    
-main_window()
+if __name__ == "__main__":
+    main_window()
