@@ -8,6 +8,8 @@ from typing import Optional,Union
 from queries import create,read,update,delete,get_all_students,get_data_for_dropdown
 from utils import limit,table_name
 
+EMPTY_STRING: str = ''
+END: str = 'end'
 @dataclass
 class main_window:
     window: CTk.CTk | None = None
@@ -32,7 +34,6 @@ class main_window:
     controls_frame: Optional[CTk.CTkFrame] = None
     info_frame: Optional[CTk.CTkFrame] = None
     entry_frame: Optional[CTk.CTkFrame] = None
-    buttons_frame: Optional[CTk.CTkFrame] = None
 
     student_id: Optional[CTk.CTkEntry] = None
     student_name: Optional[CTk.CTkEntry] = None
@@ -42,6 +43,8 @@ class main_window:
     adviser: Union[CTk.CTkComboBox,CTk.CTkEntry] = None
     enrollment_status: Union[CTk.CTkComboBox,CTk.CTkEntry] = None
 
+    buttons_frame: Optional[CTk.CTkFrame] = None
+    is_in_View_Mode: bool = True
 
     def __init__(self) -> None:
         self.create_the_window()
@@ -118,12 +121,17 @@ class main_window:
     def setup_info_frame(self):
  
         description_frame = CTk.CTkFrame(self.info_frame,bg_color="transparent",fg_color="transparent")
-        description_frame.grid(row=0,padx=5,sticky="n")
+        description_frame.grid(row=0,column = 0,padx=5,sticky="nw")
+
         info_frame_label = CTk.CTkLabel(description_frame,text="STUDENT INFORMATION SECTION",
                                         font=(CTk.CTkFont("Arial",weight="bold")),fg_color="green",
                                         corner_radius=20,bg_color="transparent")
-        info_frame_label.grid(row=0,padx=0,pady=(3,7),sticky="n")
-        
+        info_frame_label.grid(row=0,column = 0,padx=(45,0),pady=(3,7),sticky="w")
+
+        view_mode_toggler=CTk.CTkSwitch(self.info_frame,corner_radius=15, text="Edit Mode", command= self.toggle_info_frame)
+        view_mode_toggler.grid(row=0,column=0,padx=(0,15),pady=(3,7),sticky="e")
+
+
         self.entry_frame = CTk.CTkFrame(self.info_frame,bg_color="transparent",fg_color="transparent")
         self.entry_frame.grid(row=1,padx=0,pady=(0,3),sticky="s")
 
@@ -144,6 +152,7 @@ class main_window:
     def setup_infos_as_combobox_for_edit_mode(self):
         self.year = CTk.CTkComboBox(self.entry_frame,width=350,values=get_data_for_dropdown('year'))
         self.year.grid(row=3,column=self.column_entry,padx=5,sticky="e")
+
         
         self.course = CTk.CTkComboBox(self.entry_frame,width=350,values=get_data_for_dropdown('courses'))
         self.course.grid(row=4,column=self.column_entry,padx=5,sticky="e")
@@ -175,35 +184,58 @@ class main_window:
 
     def setup_buttons_frame(self):
 
-        test_button=CTk.CTkButton(self.buttons_frame,610,text="SAMPLE BUTTON ", command= self.toggle_info_frame)
-        test_button.grid(row=0,column=0,padx=0,pady=0,sticky="we")
+        pass
     
     def bind_functions(self):
         self.table.bind('<<TreeviewSelect>>', self.item_select)
         self.table.bind('<Double-1>', self.show_to_info_frame)
     
-    def show_to_info_frame(self,data):
+    def show_to_info_frame(self,data: any=None):
         selected_student = self.table.selection()
         student_details=self.table.item(selected_student)['values']
-
-        if not self.reset_info_on_info_frame(): return
-        self.student_id.insert(0,student_details[0])
-        self.student_name.insert(0,student_details[1])
-        self.year.insert(0,student_details[2])
-        self.course.insert(0,student_details[3])
-        self.organization.insert(0,student_details[4])
-        self.adviser.insert(0,student_details[5])
-        self.enrollment_status.insert(0,student_details[6])
-
+        # At first start of app, there are no selected student yet and this 
+        # will cause errors
+        try:
+            if not self.reset_info_on_info_frame():
+                
+                self.student_id.insert(0,student_details[0])
+                self.student_id.configure(True,state="disabled")
+                self.student_name.insert(0,student_details[1])
+                self.year.set(student_details[2])
+                self.course.set(student_details[3])
+                self.organization.set(student_details[4])
+                self.adviser.set(student_details[5])
+                self.enrollment_status.set(student_details[6])
+                return
+        
+            self.student_id.insert(0,student_details[0])
+            self.student_id.configure(True,state="disabled")
+            self.student_name.insert(0,student_details[1])
+            self.year.insert(0,student_details[2])
+            self.course.insert(0,student_details[3])
+            self.organization.insert(0,student_details[4])
+            self.adviser.insert(0,student_details[5])
+            self.enrollment_status.insert(0,student_details[6])
+        except IndexError:
+                pass
     def reset_info_on_info_frame(self):
-        if not self.check_if_info_form_mode_is_entry(): return False
-        self.student_id.delete(0,"end")
-        self.student_name.delete(0,"end")
-        self.year.delete(0,"end")
-        self.course.delete(0,"end")
-        self.organization.delete(0,"end")
-        self.adviser.delete(0,"end")
-        self.enrollment_status.delete(0,"end")
+        self.student_id.configure(True,state="normal")
+        self.student_id.delete(0,END)
+        self.student_name.delete(0,END)
+
+        if not self.is_in_View_Mode: 
+            self.year.set(EMPTY_STRING)
+            self.course.set(EMPTY_STRING)
+            self.organization.set(EMPTY_STRING)
+            self.adviser.set(EMPTY_STRING)
+            self.enrollment_status.set(EMPTY_STRING)
+            return False
+
+        self.year.delete(0,END)
+        self.course.delete(0,END)
+        self.organization.delete(0,END)
+        self.adviser.delete(0,END)
+        self.enrollment_status.delete(0,END)
         return True
 
     def delete_widgets_on_info_frame(self):
@@ -216,14 +248,17 @@ class main_window:
     def item_select(self,_):
         self.reset_info_on_info_frame()
     
-    def check_if_info_form_mode_is_entry(self):
-        return isinstance(self.year,CTk.CTkEntry)
-    def toggle_info_frame(self):
-        isEntry=self.check_if_info_form_mode_is_entry()
-
+    
+    def toggle_info_frame(self):      
         self.delete_widgets_on_info_frame()
-        if isEntry: self.setup_infos_as_combobox_for_edit_mode()
-        else: self.setup_infos_as_entry_for_view_mode()
+        if self.is_in_View_Mode: 
+            self.setup_infos_as_combobox_for_edit_mode()
+            self.is_in_View_Mode = False
+            self.show_to_info_frame()
+        else: 
+            self.setup_infos_as_entry_for_view_mode()
+            self.is_in_View_Mode = True
+            self.show_to_info_frame()
 
     def get_center_of_screen(self,window = None, width = None,height = None,X_OFFSET=0,Y_OFFSET=-100) -> str:
 
