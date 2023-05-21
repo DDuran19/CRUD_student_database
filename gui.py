@@ -288,15 +288,15 @@ To exit the application, click the "exit" button.\n'
     def generate_random_student(self):
         first_names = ['Bob', 'Maria', 'Alex', 'James', 'Susan', 'Henry', 'Lisa', 'Anna', 'Lisa']
         last_names = ['Smith', 'Brown', 'Wilson', 'Thomson', 'Cook', 'Taylor', 'Walker', 'Clark']
-        numbers=[1,2,3,4,5]
-        
+        five=[1,2,3,4,5]
+        four=[1,2,3,4]
                 
         random_name = f'{choice(first_names)} {choice(last_names)}'
-        random_year = choice(numbers)
-        random_course = choice(numbers)
-        random_organization = choice(numbers)
-        random_adviser = choice(numbers)
-        random_enrollment_Status = choice(numbers)
+        random_year = choice(four)
+        random_course = choice(five)
+        random_organization = choice(five)
+        random_adviser = choice(five)
+        random_enrollment_Status = choice(four)
         self.add_student_to_database(Student_Name=random_name,
                 Organization_id=random_organization,
                 Enrollment_Status_id=random_enrollment_Status,
