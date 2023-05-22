@@ -385,11 +385,11 @@ To exit the application, click the "exit" button.\n'
     def create_new_student(self):
         if self.is_in_View_Mode:
             self.view_mode_toggler.toggle()
-        self.is_in_new_mode = True
         self.show_to_info_frame()
         self.reset_info_on_info_frame()
         self.new_button.configure(fg_color="green")
         self.student_id.configure(True,state=DISABLED)
+        self.is_in_new_mode = True
 
     def save_student(self):
         if self.is_in_View_Mode:
@@ -408,7 +408,7 @@ To exit the application, click the "exit" button.\n'
         
         if self.is_in_new_mode:
             student_info[0].pop("id")
-            self.add_student_to_database(**student_info)
+            self.add_student_to_database(**student_info[0])
         
         else:
             update(table_name.students,**student_info[0])

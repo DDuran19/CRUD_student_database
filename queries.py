@@ -5,7 +5,7 @@ from utils import table_name,limit
 DATABASE_PATH="student_database.sqlite3"
 COMMA=','
 
-def create(table_name: table_name, **kwargs) ->bool:
+def create(table_name: table_name, database = None,**kwargs) ->bool:
     with sqlite3.connect(DATABASE_PATH) as db:
         cur = db.cursor()
         columns = ''
