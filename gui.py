@@ -12,6 +12,8 @@ from utils import limit,table_name
 
 EMPTY_STRING: str = ''
 END: str = 'end'
+DISABLED: str ="disabled"
+NORMAL: str ="normal"
 @dataclass
 class main_window:
     window: CTk.CTk | None = None
@@ -62,7 +64,7 @@ class main_window:
     organization_is_valid=False
     adviser_is_valid=False
     enrollment_status_is_valid=False
-
+    selected_for_edit:str = ""
     def __init__(self) -> None:
         self.create_the_window()
         self.set_title()
@@ -167,7 +169,7 @@ class main_window:
         self.setup_infos_as_entry_for_view_mode()
 
     def create_student_entry(self):
-        self.student_id = CTk.CTkEntry(self.entry_frame,width=350,state="disabled")
+        self.student_id = CTk.CTkEntry(self.entry_frame,width=350,state=DISABLED)
         self.student_id.grid(row=1,column=self.column_entry,padx=5,sticky="e")
         self.student_name = CTk.CTkEntry(self.entry_frame,width=350)
         self.student_name.grid(row=2,column=self.column_entry,padx=5,sticky="e")
@@ -234,7 +236,7 @@ class main_window:
         actual_buttons.grid(row=0,column=0,sticky="nswe",padx=0,pady=0)
         self.new_button=CTk.CTkButton(actual_buttons,width=230,corner_radius=15,text="New Student",command=self.create_new_student)
         self.new_button.grid(row=0,column=0,pady=(10,10),padx=(5,0),sticky="w")
-        self.save_button=CTk.CTkButton(actual_buttons,width=230,corner_radius=15,text="Save Changes", command=self.save_student)
+        self.save_button=CTk.CTkButton(actual_buttons,width=230,corner_radius=15,text="Save Changes", state=DISABLED, command=self.save_student)
         self.save_button.grid(row=0,column=1,pady=(10,10),padx=(15,15),sticky="we")
         self.delete_button=CTk.CTkButton(actual_buttons,width=230,corner_radius=15,text="Delete Student",command=self.delete_student_from_database)
         self.delete_button.grid(row=0,column=2,pady=(10,10),padx=(0,25),sticky="e")
@@ -263,14 +265,17 @@ To exit the application, click the "exit" button.\n'
     def show_to_info_frame(self,data: any=None):
         selected_student = self.table.selection()
         student_details=self.table.item(selected_student)['values']
+        self.selected_for_edit=selected_student
+        self.is_in_new_mode=False
+        self.new_button.configure(fg_color="#1c6ca4")
         # At first start of app, there are no selected student yet and  
         # the codes below will cause an index error
         
         try:
             if not self.reset_info_on_info_frame():
-                self.student_id.configure(True,state="normal")
+                self.student_id.configure(True,state=NORMAL)
                 self.student_id.insert(0,student_details[0])
-                self.student_id.configure(True,state="disabled")
+                self.student_id.configure(True,state=DISABLED)
                 self.student_name.insert(0,student_details[1])
                 self.year.set(student_details[2])
                 self.course.set(student_details[3])
@@ -278,21 +283,27 @@ To exit the application, click the "exit" button.\n'
                 self.adviser.set(student_details[5])
                 self.enrollment_status.set(student_details[6])
                 return
-            self.student_id.configure(True,state="normal")
+            self.student_id.configure(True,state=NORMAL)
             self.student_id.insert(0,student_details[0])
-            self.student_id.configure(True,state="disabled")
+            self.student_id.configure(True,state=DISABLED)
             self.student_name.insert(0,student_details[1])
+            self.student_name.configure(True,state=DISABLED)
             self.year.insert(0,student_details[2])
+            self.year.configure(True,state=DISABLED)
             self.course.insert(0,student_details[3])
+            self.course.configure(True,state=DISABLED)
             self.organization.insert(0,student_details[4])
+            self.organization.configure(True,state=DISABLED)
             self.adviser.insert(0,student_details[5])
+            self.adviser.configure(True,state=DISABLED)
             self.enrollment_status.insert(0,student_details[6])
+            self.enrollment_status.configure(True,state=DISABLED)
         except IndexError:
                 pass
     def reset_info_on_info_frame(self):
-        self.student_id.configure(True,state="normal")
+        self.student_id.configure(True,state=NORMAL)
         self.student_id.delete(0,END)
-        self.student_id.configure(True,state="disabled")
+        self.student_id.configure(True,state=DISABLED)
         self.student_name.delete(0,END)
 
         if not self.is_in_View_Mode: 
@@ -323,14 +334,14 @@ To exit the application, click the "exit" button.\n'
     
     def toggle_info_frame(self):      
         self.delete_widgets_on_info_frame()
-        self.new_button.configure(fg_color="#1c6ca4")
-        self.is_in_new_mode = False
         if self.is_in_View_Mode: 
             self.setup_infos_as_combobox_for_edit_mode()
+            self.save_button.configure(state=NORMAL)
             self.is_in_View_Mode = False
             self.show_to_info_frame()
         else: 
             self.setup_infos_as_entry_for_view_mode()
+            self.save_button.configure(state=DISABLED)
             self.is_in_View_Mode = True
             self.show_to_info_frame()
 
@@ -352,7 +363,7 @@ To exit the application, click the "exit" button.\n'
                 Adviser_id=random_adviser,
                 Course_id=random_course,
                 Year_id = random_year)
-    def get_info_from_info_frame(self) -> dict:
+    def get_info_from_info_frame(self) -> tuple:
         student_id = self.student_id.get()
         student_name = self.student_name.get()
         year = self.year.get()
@@ -360,27 +371,30 @@ To exit the application, click the "exit" button.\n'
         organization = self.organization.get()
         adviser = self.adviser.get()
         enrollment_status = self.enrollment_status.get()
-        return {"id":student_id,
+
+        student_dict = {"id":student_id,
                 "Student_Name":student_name,
                 "Year_id":self.year_dropdown.index(year)+1,
                 "Course_id":self.course_dropdown.index(course)+1,
                 "Organization_id":self.organization_dropdown.index(organization)+1,
                 "Adviser_id":self.adviser_dropdown.index(adviser)+1,
-                "Enrollment_status_id":self.enrollment_status_dropdown.index(enrollment_status)+1 }
+                "Enrollment_status_id":self.enrollment_status_dropdown.index(enrollment_status)+1}
+        student_tuple = (student_id,student_name,year,course,organization,adviser,enrollment_status)
+        return (student_dict,student_tuple)
+
     def create_new_student(self):
         if self.is_in_View_Mode:
             self.view_mode_toggler.toggle()
-            self.is_in_View_Mode = False
-            self.delete_widgets_on_info_frame()
-            self.setup_infos_as_combobox_for_edit_mode()
         self.is_in_new_mode = True
         self.show_to_info_frame()
         self.reset_info_on_info_frame()
         self.new_button.configure(fg_color="green")
-        self.student_id.configure(True,state="disabled")
+        self.student_id.configure(True,state=DISABLED)
 
     def save_student(self):
-
+        if self.is_in_View_Mode:
+            return
+        
         input_is_valid=all([self.name_is_valid, 
             self.year_is_valid, 
             self.course_is_valid, 
@@ -388,15 +402,20 @@ To exit the application, click the "exit" button.\n'
             self.adviser_is_valid, 
             self.enrollment_status_is_valid])
 
+        if not input_is_valid:
+            return
+        student_info=self.get_info_from_info_frame()
         
-        if self.is_in_new_mode and input_is_valid:
-            student_info=self.get_info_from_info_frame()
-            student_info.pop("id")
+        if self.is_in_new_mode:
+            student_info[0].pop("id")
             self.add_student_to_database(**student_info)
-            self.reset_info_on_info_frame()
-            self.toggle_info_frame()
-            self.setup_infos_as_entry_for_view_mode()
         
+        else:
+            update(table_name.students,**student_info[0])
+            self.table.item(self.selected_for_edit,values=student_info[1])
+
+        self.view_mode_toggler.toggle()
+
         
     def add_student_to_database(self,**kwargs):
         create(table_name.students,
