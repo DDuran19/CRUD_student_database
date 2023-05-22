@@ -49,7 +49,7 @@ def read(table_name: table_name,id: int, limit:limit=limit.One) -> sqlite3.Curso
                     JOIN year ON students.Year_id = year.id\
                     JOIN enrollment_status ON students.Enrollment_status_id = enrollment_status.id\
                         \
-                    WHERE students.id = {id}"
+                    WHERE students.id = (SELECT max(id) FROM students)"
             
             case "advisers":
                 query+=f"SELECT adviser_name FROM advisers where id = {id}"
@@ -98,7 +98,7 @@ def delete(table_name: table_name,id: int):
     with sqlite3.connect(DATABASE_PATH) as db:
         cur = db.cursor()
         try:
-            cur.execute(f'DELETE * FROM {table_name} WHERE id = ?', (id,))
+            cur.execute(f'DELETE FROM {table_name} WHERE id = ?', (id,))
             db.commit()
         except Exception as error:
             print(error)

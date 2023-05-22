@@ -236,7 +236,7 @@ class main_window:
         self.new_button.grid(row=0,column=0,pady=(10,10),padx=(5,0),sticky="w")
         self.save_button=CTk.CTkButton(actual_buttons,width=230,corner_radius=15,text="Save Changes", command=self.save_student)
         self.save_button.grid(row=0,column=1,pady=(10,10),padx=(15,15),sticky="we")
-        self.delete_button=CTk.CTkButton(actual_buttons,width=230,corner_radius=15,text="Delete Student")
+        self.delete_button=CTk.CTkButton(actual_buttons,width=230,corner_radius=15,text="Delete Student",command=self.delete_student_from_database)
         self.delete_button.grid(row=0,column=2,pady=(10,10),padx=(0,25),sticky="e")
         self.generate_button=CTk.CTkButton(actual_buttons,width=230,corner_radius=15,text="GENERATE RANDOM STUDENT",command=self.generate_random_student)
         self.generate_button.grid(row=1,column=0,pady=(10,10),padx=(5,0),sticky="w")
@@ -401,12 +401,12 @@ To exit the application, click the "exit" button.\n'
     def add_student_to_database(self,**kwargs):
         create(table_name.students,
                 **kwargs)
-        last_child=self.table.get_children()[-1]
-        last_student_id=self.table.item(last_child)["values"][0]  
+        # The area below is totally optional, much better way is to just reassign the values
+        # instead of reading from the disk. But for the purpose of the project, 
+        # we need to apply the CRUD
 
-        student_id = int(last_student_id)+1
-        student = read(table_name.students,student_id,limit=limit.One)
-        
+        student = read(table_name.students,-1,limit=limit.One)
+        student_id = str(student[0])
         Student_Name = str(student[1])
         Year = str(student[3])
         Course = str(student[2])
@@ -415,6 +415,12 @@ To exit the application, click the "exit" button.\n'
         Enrollment_Status = str(student[4])
         data = (student_id,Student_Name,Year,Course,Organization,Adviser,Enrollment_Status)
         self.table.insert(parent='',index = CTk.END,values = data)
+
+    def delete_student_from_database(self):
+        selected_student = self.table.selection()
+        student_details=self.table.item(selected_student)['values']
+        delete(table_name.students,student_details[0])
+        self.table.delete(selected_student)
 
     def invalid_input_on_combobox(self,event,combobox: CTk.CTkComboBox,dropdown,name):
         match event.char:
