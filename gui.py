@@ -47,7 +47,16 @@ class main_window:
 
     buttons_frame: Optional[CTk.CTkFrame] = None
     is_in_View_Mode: bool = True
+    is_in_new_mode: bool = False
+    view_mode_toggler: Optional[CTk.CTkSwitch] = None
 
+    year_dropdown=get_data_for_dropdown('year')
+    course_dropdown=get_data_for_dropdown('courses')
+    organization_dropdown=get_data_for_dropdown('organization')
+    adviser_dropdown=get_data_for_dropdown('advisers')
+    enrollment_status_dropdown=get_data_for_dropdown('enrollment_status')
+
+    
     def __init__(self) -> None:
         self.create_the_window()
         self.set_title()
@@ -133,8 +142,8 @@ class main_window:
                                         corner_radius=20,bg_color="transparent")
         info_frame_label.grid(row=0,column = 0,padx=(45,0),pady=(3,7),sticky="w")
 
-        view_mode_toggler=CTk.CTkSwitch(self.info_frame,corner_radius=15, text="Edit Mode", command= self.toggle_info_frame)
-        view_mode_toggler.grid(row=0,column=0,padx=(0,15),pady=(3,7),sticky="e")
+        self.view_mode_toggler=CTk.CTkSwitch(self.info_frame,corner_radius=15, text="Edit Mode", command= self.toggle_info_frame)
+        self.view_mode_toggler.grid(row=0,column=0,padx=(0,15),pady=(3,7),sticky="e")
 
 
         self.entry_frame = CTk.CTkFrame(self.info_frame,bg_color="transparent",fg_color="transparent")
@@ -147,29 +156,42 @@ class main_window:
             label = CTk.CTkLabel(self.entry_frame,text=header)
             label.grid(row=row,column=self.column_label,padx=5,sticky="w")
             row+=1
-        self.student_id = CTk.CTkEntry(self.entry_frame,width=350)
+        self.student_id = CTk.CTkEntry(self.entry_frame,width=350,state="disabled")
         self.student_id.grid(row=1,column=self.column_entry,padx=5,sticky="e")
 
         self.student_name = CTk.CTkEntry(self.entry_frame,width=350)
         self.student_name.grid(row=2,column=self.column_entry,padx=5,sticky="e")
+        self.student_name.bind('<KeyPress>',lambda event: self.invalid_input_on_entry(event=event,Entry=self.student_name))
+
         
         self.setup_infos_as_entry_for_view_mode()
     def setup_infos_as_combobox_for_edit_mode(self):
-        self.year = CTk.CTkComboBox(self.entry_frame,width=350,values=get_data_for_dropdown('year'))
+        self.year = CTk.CTkComboBox(self.entry_frame,width=350,values=self.year_dropdown)
         self.year.grid(row=3,column=self.column_entry,padx=5,sticky="e")
-
+        self.year.bind('<KeyPress>',lambda event: self.invalid_input_on_combobox(event=event,combobox=self.year,dropdown=self.year_dropdown))
+        self.year.bind('<ButtonRelease>',lambda event: self.invalid_input_on_combobox(event=event,combobox=self.year,dropdown=self.year_dropdown))
         
-        self.course = CTk.CTkComboBox(self.entry_frame,width=350,values=get_data_for_dropdown('courses'))
+        self.course = CTk.CTkComboBox(self.entry_frame,width=350,values=self.course_dropdown)
         self.course.grid(row=4,column=self.column_entry,padx=5,sticky="e")
+        self.course.bind('<KeyPress>',lambda event: self.invalid_input_on_combobox(event=event,combobox=self.course,dropdown=self.course_dropdown))
+        self.course.bind('<ButtonRelease>',lambda event: self.invalid_input_on_combobox(event=event,combobox=self.course,dropdown=self.course_dropdown))
         
-        self.organization = CTk.CTkComboBox(self.entry_frame,width=350,values=get_data_for_dropdown('organization'))
+        self.organization = CTk.CTkComboBox(self.entry_frame,width=350,values=self.organization_dropdown)
         self.organization.grid(row=5,column=self.column_entry,padx=5,sticky="e")
+        self.organization.bind('<KeyPress>',lambda event: self.invalid_input_on_combobox(event=event,combobox=self.organization,dropdown=self.organization_dropdown))
+        self.organization.bind('<ButtonRelease>',lambda event: self.invalid_input_on_combobox(event=event,combobox=self.organization,dropdown=self.organization_dropdown))
         
-        self.adviser = CTk.CTkComboBox(self.entry_frame,width=350, values=get_data_for_dropdown('advisers'))
+        self.adviser = CTk.CTkComboBox(self.entry_frame,width=350, values=self.adviser_dropdown)
         self.adviser.grid(row=6,column=self.column_entry,padx=5,sticky="e")
+        self.adviser.bind('<KeyPress>',lambda event: self.invalid_input_on_combobox(event=event,combobox=self.adviser,dropdown=self.adviser_dropdown))
+        self.adviser.bind('<ButtonRelease>',lambda event: self.invalid_input_on_combobox(event=event,combobox=self.adviser,dropdown=self.adviser_dropdown))
          
-        self.enrollment_status = CTk.CTkComboBox(self.entry_frame,width=350,values=get_data_for_dropdown('enrollment_status'))
+        self.enrollment_status = CTk.CTkComboBox(self.entry_frame,width=350,values=self.enrollment_status_dropdown)
         self.enrollment_status.grid(row=7,column=self.column_entry,padx=5,sticky="e")
+        self.enrollment_status.bind('<KeyPress>',lambda event: self.invalid_input_on_combobox(event=event,combobox=self.enrollment_status,dropdown=self.enrollment_status_dropdown))
+        self.enrollment_status.bind('<ButtonRelease>',lambda event: self.invalid_input_on_combobox(event=event,combobox=self.enrollment_status,dropdown=self.enrollment_status_dropdown))
+
+
     def setup_infos_as_entry_for_view_mode(self):
         self.year = CTk.CTkEntry(self.entry_frame,width=350)
         self.year.grid(row=3,column=self.column_entry,padx=5,sticky="e")
@@ -189,16 +211,16 @@ class main_window:
     def setup_buttons_frame(self):
         actual_buttons = CTk.CTkFrame(self.buttons_frame)
         actual_buttons.grid(row=0,column=0,sticky="nswe",padx=0,pady=0)
-        new_button=CTk.CTkButton(actual_buttons,width=230,corner_radius=15,text="New Student")
-        new_button.grid(row=0,column=0,pady=(10,10),padx=(5,0),sticky="w")
-        save_button=CTk.CTkButton(actual_buttons,width=230,corner_radius=15,text="Save Changes")
-        save_button.grid(row=0,column=1,pady=(10,10),padx=(15,15),sticky="we")
-        delete_button=CTk.CTkButton(actual_buttons,width=230,corner_radius=15,text="Delete Student")
-        delete_button.grid(row=0,column=2,pady=(10,10),padx=(0,25),sticky="e")
-        generate_button=CTk.CTkButton(actual_buttons,width=230,corner_radius=15,text="GENERATE RANDOM STUDENT",command=self.generate_random_student)
-        generate_button.grid(row=1,column=0,pady=(10,10),padx=(5,0),sticky="w")
-        exit_button=CTk.CTkButton(actual_buttons,width=230,corner_radius=15,text="EXIT")
-        exit_button.grid(row=1,column=1,pady=(10,10),padx=(15,15),sticky="ew")
+        self.new_button=CTk.CTkButton(actual_buttons,width=230,corner_radius=15,text="New Student",command=self.create_new_student)
+        self.new_button.grid(row=0,column=0,pady=(10,10),padx=(5,0),sticky="w")
+        self.save_button=CTk.CTkButton(actual_buttons,width=230,corner_radius=15,text="Save Changes", command=self.save_student)
+        self.save_button.grid(row=0,column=1,pady=(10,10),padx=(15,15),sticky="we")
+        self.delete_button=CTk.CTkButton(actual_buttons,width=230,corner_radius=15,text="Delete Student")
+        self.delete_button.grid(row=0,column=2,pady=(10,10),padx=(0,25),sticky="e")
+        self.generate_button=CTk.CTkButton(actual_buttons,width=230,corner_radius=15,text="GENERATE RANDOM STUDENT",command=self.generate_random_student)
+        self.generate_button.grid(row=1,column=0,pady=(10,10),padx=(5,0),sticky="w")
+        self.exit_button=CTk.CTkButton(actual_buttons,width=230,corner_radius=15,text="EXIT", command=self.window.quit)
+        self.exit_button.grid(row=1,column=1,pady=(10,10),padx=(15,15),sticky="ew")
 
         self.setup_instruction_section()
     def setup_instruction_section(self):
@@ -276,6 +298,8 @@ To exit the application, click the "exit" button.\n'
     
     def toggle_info_frame(self):      
         self.delete_widgets_on_info_frame()
+        self.new_button.configure(fg_color="#1c6ca4")
+        self.is_in_new_mode = False
         if self.is_in_View_Mode: 
             self.setup_infos_as_combobox_for_edit_mode()
             self.is_in_View_Mode = False
@@ -303,7 +327,41 @@ To exit the application, click the "exit" button.\n'
                 Adviser_id=random_adviser,
                 Course_id=random_course,
                 Year_id = random_year)
+    def get_info_from_info_frame(self) -> dict:
+        student_id = self.student_id.get()
+        student_name = self.student_name.get()
+        year = self.year.get()
+        course = self.course.get()
+        organization = self.organization.get()
+        adviser = self.adviser.get()
+        enrollment_status = self.enrollment_status.get()
+        return {"id":student_id,
+                "Student_Name":student_name,
+                "year":year,
+                "course":course,
+                "organization":organization,
+                "adviser":adviser,
+                "enrollment_status":enrollment_status}
+    def create_new_student(self):
+        if self.is_in_View_Mode:
+            self.view_mode_toggler.toggle()
+            self.is_in_View_Mode = False
+            self.delete_widgets_on_info_frame()
+            self.setup_infos_as_combobox_for_edit_mode()
+        self.is_in_new_mode = True
+        self.show_to_info_frame()
+        self.reset_info_on_info_frame()
+        self.new_button.configure(fg_color="green")
+        self.student_id.configure(True,state="disabled")
 
+    def save_student(self):
+        student_info=self.get_info_from_info_frame()
+        if self.is_in_new_mode:
+            student_info.pop("id")
+            print(student_info)
+
+        
+        
     def add_student_to_database(self,**kwargs):
         create(table_name.students,
                 **kwargs)
@@ -322,8 +380,34 @@ To exit the application, click the "exit" button.\n'
         data = (student_id,Student_Name,Year,Course,Organization,Adviser,Enrollment_Status)
         self.table.insert(parent='',index = CTk.END,values = data)
 
+    def invalid_input_on_combobox(self,event,combobox: CTk.CTkComboBox,dropdown):
+        match event.char:
+            case '\x08':
+                current = combobox.get()[:-1]
+            case '??':
+                current = combobox.get()
+            case _:
+                current = combobox.get() + str(event.char)
+        if current in dropdown:
+            self.set_border_color_to_green_if_acceptable(combobox,True)
+            return
+        self.set_border_color_to_green_if_acceptable(combobox,False)
 
 
+    def invalid_input_on_entry(self,event,Entry:CTk.CTkEntry):
+
+        if Entry.get().isalpha() == EMPTY_STRING and event.char.isalpha():
+            self.set_border_color_to_green_if_acceptable(Entry,True)
+        elif Entry.get().isalpha() and event.char.isalpha(): 
+            self.set_border_color_to_green_if_acceptable(Entry,True)
+        elif Entry.get()[:-1].isalpha() and event.char == '\x08':
+            self.set_border_color_to_green_if_acceptable(Entry,True)
+        else:self.set_border_color_to_green_if_acceptable(Entry,False)
+
+    def set_border_color_to_green_if_acceptable(self,Object,valid: bool):
+        if valid:
+            Object.configure(True,border_color='green')
+        else: Object.configure(True,border_color='red')
 
     def get_center_of_screen(self,window = None, width = None,height = None,X_OFFSET=0,Y_OFFSET=-100) -> str:
 
@@ -342,5 +426,6 @@ To exit the application, click the "exit" button.\n'
         y = (self.screen_height - (self.HEIGHT // 2)) + Y_OFFSET
 
         return f'{width}x{height}+{x}+{y}'
+    
 if __name__ == "__main__":
     main_window()
